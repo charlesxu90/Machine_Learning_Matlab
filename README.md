@@ -6,7 +6,7 @@ This is a github sourse for some basic Machine Learning algorithms.
 You can download and study this code freely. However, it's banned to use this code as 
 homework or any other works that you should finish it by yourself.
 
-This code is a MATLAB code. The contents of the codes will be:
+This codes are MATLAB codes. The contents of the codes will be:
 
 1. Linear regression
 
