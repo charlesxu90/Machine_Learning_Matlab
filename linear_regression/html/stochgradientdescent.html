@@ -1,0 +1,246 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>stochgradientdescent</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-02-23"><meta name="DC.source" content="stochgradientdescent.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Stochastic Gradient descent</a></li><li><a href="#2">Generate data: generate t0 from x0</a></li><li><a href="#3">Split data into train set and test set</a></li><li><a href="#4">Training params</a></li><li><a href="#5">Training</a></li><li><a href="#6">Testing</a></li><li><a href="#7">Results 1: Figure for predicted and actual comparison</a></li><li><a href="#9">Result 2: Error curve with different iterations</a></li><li><a href="#11">Result 3: Final Root-Mean-Square Error and W</a></li></ul></div><h2>Stochastic Gradient descent<a name="1"></a></h2><p>This is the script for batch gradient descent algorithm using polynomial base function</p><pre class="codeinput">clc;
+clear;
+close <span class="string">all</span>;
+</pre><h2>Generate data: generate t0 from x0<a name="2"></a></h2><pre class="codeinput">x=[0.0005:0.0005:1.000]';
+noise=0.1.*randn(1,2000)';
+t=sin(2*pi*x)+noise;
+<span class="comment">% plot(x,t);</span>
+<span class="comment">% hold on</span>
+</pre><h2>Split data into train set and test set<a name="3"></a></h2><pre class="codeinput">idx=crossvalind(<span class="string">'Kfold'</span>,size(x,1),5);
+test_idx = find(idx==1);
+train_idx = find(idx~=1);
+train_x=x(train_idx,:);
+train_t=t(train_idx,:);
+test_x=x(test_idx,:);
+test_t=t(test_idx,:);
+</pre><h2>Training params<a name="4"></a></h2><p>Below is the equation for Stochastic Gradient Descent. Here <img src="stochgradientdescent_eq31413.png" alt="$j$"> is the power of x coresponding to <img src="stochgradientdescent_eq38586.png" alt="$w_{j}$">, <img src="stochgradientdescent_eq25947.png" alt="$n$"> iterates through all data points. <img src="stochgradientdescent_eq08165.png" alt="$\eta$"> is the learning rate for each iteration. <img src="stochgradientdescent_eq95298.png" alt="$W^{n+1}_{j} = W^{n}_{j}-\eta{(y(x_{n},W)-t_{n})*x^j)}$"></p><pre class="codeinput">M=4; <span class="comment">% Maximum power of x</span>
+max_iter=5000000;
+eta=0.9;
+W=zeros(M+1,1);
+W_threshold = repmat(0.000000001, M+1, 1);
+err_threshold = .000000001;
+</pre><h2>Training<a name="5"></a></h2><p>Here comes the base matrix with power 4</p><pre class="codeinput">x_pol=[ones(size(train_x,1),1) train_x train_x.*train_x train_x.*train_x.*train_x <span class="keyword">...</span>
+    train_x.*train_x.*train_x.*train_x];
+<span class="comment">% size(x_pol)</span>
+<span class="keyword">for</span> iter = 1:max_iter
+    W_prev = W;
+    <span class="comment">% Enable using data more than once, idx_crt is current index of the point</span>
+    idx_crt = rem(iter-1,size(train_x,1))+1;
+    fx_n = (W'*x_pol(idx_crt,:)')';
+    W = W - eta*1/size(train_x,1)*((fx_n - t(idx_crt,:))*x_pol(idx_crt,:))';
+<span class="comment">%     W = W - eta*1/size(train_x,1)*((fx_n - t(idx_crt,:))*x_pol(idx_crt,:))';</span>
+
+    <span class="comment">% Sum square error on training</span>
+    y_hat=(W'*x_pol')';
+    err(iter,1) = 1/2*sum((y_hat - train_t).^2);
+    <span class="comment">% check for termination conditions</span>
+    <span class="keyword">if</span> iter&gt;1 &amp;&amp; abs(err(iter-1,1)-err(iter,1))&lt; err_threshold
+        <span class="keyword">break</span>;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2>Testing<a name="6"></a></h2><pre class="codeinput">pred_fx=(W'*[ones(size(test_x,1),1) test_x test_x.*test_x test_x.*test_x.*test_x <span class="keyword">...</span>
+    test_x.*test_x.*test_x.*test_x]')';
+test_err = 1/2*sum((pred_fx - t(test_idx,:)).^2);
+rmse = sqrt(2*test_err/size(test_idx,1));
+</pre><h2>Results 1: Figure for predicted and actual comparison<a name="7"></a></h2><pre class="codeinput">fig1=figure(1);
+plot(x(test_idx),t(test_idx),<span class="string">'rp-'</span>,x(test_idx),pred_fx,<span class="string">'bs-'</span>);
+legend(<span class="string">'measured'</span>, <span class="string">'predicted'</span>);
+grid <span class="string">on</span>;
+xlabel(<span class="string">'x'</span>);
+ylabel(<span class="string">'f(x)/t'</span>);
+title(<span class="string">'Measured and predicted f(x) comparison'</span>);
+saveas(fig1,<span class="string">'ms_pred_cmp.jpg'</span>,<span class="string">'jpg'</span>);
+</pre><img vspace="5" hspace="5" src="stochgradientdescent_01.png" alt=""> <p><img vspace="5" hspace="5" src="ms_pred_cmp.jpg" alt=""> </p><h2>Result 2: Error curve with different iterations<a name="9"></a></h2><pre class="codeinput">fig2=figure(2);
+plot(err,<span class="string">'r'</span>);
+title(<span class="string">'Decreasing Sum square error function'</span>);
+xlabel(<span class="string">'Iterations'</span>);
+ylabel(<span class="string">'Sum of squared error'</span>);
+saveas(fig2,<span class="string">'Sum_sqr_err.jpg'</span>,<span class="string">'jpg'</span>);
+</pre><img vspace="5" hspace="5" src="stochgradientdescent_02.png" alt=""> <p><img vspace="5" hspace="5" src="Sum_sqr_err.jpg" alt=""> </p><h2>Result 3: Final Root-Mean-Square Error and W<a name="11"></a></h2><pre class="codeinput">fprintf(<span class="string">'\nRoot mean square error: '</span>);
+rmse
+fprintf(<span class="string">'\ncoefficient W:\n'</span>);
+W
+</pre><pre class="codeoutput">
+Root mean square error: 
+rmse =
+
+      0.46246
+
+
+coefficient W:
+
+W =
+
+      0.26616
+       4.1903
+      -7.0577
+      -3.0713
+       4.5234
+
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Stochastic Gradient descent
+% This is the script for batch gradient descent algorithm
+% using polynomial base function
+
+clc;
+clear;
+close all;
+
+%% Generate data: generate t0 from x0
+x=[0.0005:0.0005:1.000]';
+noise=0.1.*randn(1,2000)';
+t=sin(2*pi*x)+noise;
+% plot(x,t);
+% hold on
+
+%% Split data into train set and test set
+idx=crossvalind('Kfold',size(x,1),5);
+test_idx = find(idx==1);
+train_idx = find(idx~=1);
+train_x=x(train_idx,:);
+train_t=t(train_idx,:);
+test_x=x(test_idx,:);
+test_t=t(test_idx,:);
+
+
+%% Training params
+% Below is the equation for Stochastic Gradient Descent. Here $j$ is the 
+% power of x coresponding to $w_{j}$, $n$ iterates through
+% all data points. $\eta$ is the learning rate for each iteration.
+% $W^{n+1}_{j} = W^{n}_{j}-\eta{(y(x_{n},W)-t_{n})*x^j)}$
+% 
+M=4; % Maximum power of x
+max_iter=5000000;
+eta=0.9;
+W=zeros(M+1,1);
+W_threshold = repmat(0.000000001, M+1, 1);
+err_threshold = .000000001;
+
+%% Training
+% Here comes the base matrix with power 4
+x_pol=[ones(size(train_x,1),1) train_x train_x.*train_x train_x.*train_x.*train_x ...
+    train_x.*train_x.*train_x.*train_x];
+% size(x_pol)
+for iter = 1:max_iter
+    W_prev = W;
+    % Enable using data more than once, idx_crt is current index of the point
+    idx_crt = rem(iter-1,size(train_x,1))+1;
+    fx_n = (W'*x_pol(idx_crt,:)')';
+    W = W - eta*1/size(train_x,1)*((fx_n - t(idx_crt,:))*x_pol(idx_crt,:))';
+%     W = W - eta*1/size(train_x,1)*((fx_n - t(idx_crt,:))*x_pol(idx_crt,:))';
+    
+    % Sum square error on training
+    y_hat=(W'*x_pol')';
+    err(iter,1) = 1/2*sum((y_hat - train_t).^2);
+    % check for termination conditions
+    if iter>1 && abs(err(iter-1,1)-err(iter,1))< err_threshold
+        break;
+    end
+end
+
+%% Testing
+pred_fx=(W'*[ones(size(test_x,1),1) test_x test_x.*test_x test_x.*test_x.*test_x ...
+    test_x.*test_x.*test_x.*test_x]')';
+test_err = 1/2*sum((pred_fx - t(test_idx,:)).^2);
+rmse = sqrt(2*test_err/size(test_idx,1));
+
+%% Results 1: Figure for predicted and actual comparison
+fig1=figure(1);
+plot(x(test_idx),t(test_idx),'rp-',x(test_idx),pred_fx,'bs-');
+legend('measured', 'predicted');
+grid on;
+xlabel('x');
+ylabel('f(x)/t');
+title('Measured and predicted f(x) comparison');
+saveas(fig1,'ms_pred_cmp.jpg','jpg');
+%%
+% <<ms_pred_cmp.jpg>>
+%
+
+%% Result 2: Error curve with different iterations
+fig2=figure(2);
+plot(err,'r');
+title('Decreasing Sum square error function');
+xlabel('Iterations');
+ylabel('Sum of squared error');
+saveas(fig2,'Sum_sqr_err.jpg','jpg');
+%%
+% <<Sum_sqr_err.jpg>>
+%
+
+%% Result 3: Final Root-Mean-Square Error and W
+fprintf('\nRoot mean square error: ');
+rmse
+fprintf('\ncoefficient W:\n');
+W
+
+##### SOURCE END #####
+--></body></html>
