@@ -1,0 +1,298 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>bayesianregression</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-02-23"><meta name="DC.source" content="bayesianregression.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Bayesian Regression</a></li><li><a href="#2">Generate data: generate t from x</a></li><li><a href="#3">Original probability distribution</a></li><li><a href="#4">Training</a></li></ul></div><h2>Bayesian Regression<a name="1"></a></h2><p>This is the Bayesian Linear Regression The basic equation for Bayesian Regression is Posterior = Likelihood * Prior</p><pre class="codeinput">clc;
+clear;
+close <span class="string">all</span>;
+</pre><h2>Generate data: generate t from x<a name="2"></a></h2><pre class="codeinput">x=-2:0.01:2;
+beta=9;
+threshold=0.15;<span class="comment">% This is threshold for point selection</span>
+noise=0.02*normrnd(0,1/beta,[1 size(x,2)]);
+<span class="comment">% Ground truth</span>
+W0=[0.5 0.2];
+t=W0(1)+W0(2)*x+noise;
+<span class="comment">% plot(x,t,'-');</span>
+<span class="comment">% hold on</span>
+axis=-1:.01:1;
+mu=[0 0];
+sigma=eye(2);
+[w0, w1]=meshgrid(axis,axis);
+</pre><h2>Original probability distribution<a name="3"></a></h2><p>Original Prior is Normal distribution with variance 1 and mean 0</p><pre class="codeinput">p=mvnpdf([w0(:),w1(:)],mu,sigma);
+P=reshape(p,length(axis),length(axis));
+
+<span class="comment">% Set figure size</span>
+set(gcf,<span class="string">'units'</span>,<span class="string">'points'</span>,<span class="string">'position'</span>,[0,0,650,800])
+lid=1;<span class="comment">% Line id</span>
+subplot(4,3,2+3*(lid-1));
+imagesc_normal(axis,axis,P);
+hold <span class="string">on</span>
+plot(W0(2),W0(1), <span class="string">'wx'</span>)
+hold <span class="string">off</span>
+xlabel(<span class="string">'w0'</span>);
+ylabel(<span class="string">'w1'</span>);
+title(<span class="string">'Prior/posterior'</span>);
+
+<span class="comment">% plot out the subfigure of 6 randomly selected points</span>
+subplot(4,3,3+3*(lid-1));
+red_idx=find(P&gt;0.15);
+msize = numel(red_idx);
+psel=red_idx(randperm(msize, 6));
+w2=mod(psel,201)*.01-1;
+w1=((psel-mod(psel,201))./201)*0.01-1;
+<span class="comment">% p_test=normpdf(w2,0,1).*normpdf(w1,0,1)</span>
+<span class="comment">% P(psel)</span>
+
+<span class="keyword">for</span> j=1:6
+    fx=w1(j)+w2(j).*x;
+    plot(x,fx,<span class="string">'r'</span>);
+    ylim([-2 2]);
+    hold <span class="string">on</span>
+<span class="keyword">end</span>
+hold <span class="string">off</span>
+xlabel(<span class="string">'x'</span>);
+ylabel(<span class="string">'y'</span>);
+title(<span class="string">'Data space'</span>);
+randpoint=randperm(size(x,2),20);
+</pre><img vspace="5" hspace="5" src="bayesianregression_01.png" alt=""> <h2>Training<a name="4"></a></h2><p>Randomly select 20 points to train the model</p><pre class="codeinput"><span class="keyword">for</span> i=1:20
+    <span class="comment">% Compute Maximum likelihood</span>
+    W=repmat(axis,size(axis,2),1)+repmat(axis',1,size(axis,2)).*x(randpoint(i));
+    pml=normpdf(W,t(randpoint(i)),1/beta);
+
+    <span class="comment">% Posterior = MLH * Prior</span>
+    P=pml.*P;
+    <span class="comment">%Plot out graph at specific point.</span>
+    <span class="keyword">if</span> (i~=1) &amp;&amp; (i~=2) &amp;&amp; (i~=20)
+        <span class="keyword">continue</span>
+    <span class="keyword">end</span>
+    lid=lid+1;
+
+    subplot(4,3,1+3*(lid-1));
+    imagesc_normal(axis,axis,pml);
+    xlabel(<span class="string">'w0'</span>);
+    ylabel(<span class="string">'w1'</span>);
+    title(<span class="string">'Likelihood'</span>);
+    hold <span class="string">on</span>
+    plot(W0(2),W0(1), <span class="string">'wx'</span>)
+    hold <span class="string">off</span>
+    xlabel(<span class="string">'w0'</span>);
+    ylabel(<span class="string">'w1'</span>);
+
+    subplot(4,3,2+3*(lid-1));
+    imagesc_normal(axis,axis,P);
+    hold <span class="string">on</span>
+    plot(W0(2),W0(1), <span class="string">'wx'</span>);
+    hold <span class="string">off</span>
+    xlabel(<span class="string">'w0'</span>);
+    ylabel(<span class="string">'w1'</span>);
+    title(<span class="string">'Prior/posterior'</span>);
+
+    <span class="comment">% plot out the subfigure of 6 randomly selected points</span>
+    red_idx=find(P&gt;0.15);
+    subplot(4,3,3+3*(lid-1));
+    msize = numel(red_idx);
+    <span class="comment">% Randomly select 6 points</span>
+    psel=red_idx(randperm(msize, 6));
+    w2=mod(psel,201)*.01-1;
+    w1=((psel-mod(psel,201))./201)*0.01-1;
+    <span class="keyword">for</span> j=1:6
+        fx=w1(j)+w2(j).*x;
+        plot(x,fx,<span class="string">'r'</span>)
+        hold <span class="string">on</span>
+    <span class="keyword">end</span>
+    <span class="keyword">for</span> k=1:i
+        plot(x(randpoint(k)),t(randpoint(k)),<span class="string">'ok'</span>)
+        ylim([-2 2]);
+        hold <span class="string">on</span>
+    <span class="keyword">end</span>
+    hold <span class="string">off</span>
+    xlabel(<span class="string">'x'</span>);
+    ylabel(<span class="string">'y'</span>);
+    title(<span class="string">'Data space'</span>);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="bayesianregression_02.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Bayesian Regression
+% This is the Bayesian Linear Regression
+% The basic equation for Bayesian Regression is
+% Posterior = Likelihood * Prior
+
+clc;
+clear;
+close all;
+%% Generate data: generate t from x
+x=-2:0.01:2;
+beta=9;
+threshold=0.15;% This is threshold for point selection
+noise=0.02*normrnd(0,1/beta,[1 size(x,2)]);
+% Ground truth
+W0=[0.5 0.2];
+t=W0(1)+W0(2)*x+noise;
+% plot(x,t,'-');
+% hold on
+axis=-1:.01:1;
+mu=[0 0];
+sigma=eye(2);
+[w0, w1]=meshgrid(axis,axis);
+
+%% Original probability distribution
+% Original Prior is Normal distribution with variance 1 and mean 0
+p=mvnpdf([w0(:),w1(:)],mu,sigma);
+P=reshape(p,length(axis),length(axis));
+
+% Set figure size
+set(gcf,'units','points','position',[0,0,650,800])
+lid=1;% Line id
+subplot(4,3,2+3*(lid-1));
+imagesc_normal(axis,axis,P);
+hold on
+plot(W0(2),W0(1), 'wx')
+hold off
+xlabel('w0');
+ylabel('w1');
+title('Prior/posterior');
+
+% plot out the subfigure of 6 randomly selected points
+subplot(4,3,3+3*(lid-1));
+red_idx=find(P>0.15);
+msize = numel(red_idx);
+psel=red_idx(randperm(msize, 6));
+w2=mod(psel,201)*.01-1;
+w1=((psel-mod(psel,201))./201)*0.01-1;
+% p_test=normpdf(w2,0,1).*normpdf(w1,0,1)
+% P(psel)
+
+for j=1:6
+    fx=w1(j)+w2(j).*x;
+    plot(x,fx,'r');
+    ylim([-2 2]);
+    hold on
+end
+hold off
+xlabel('x');
+ylabel('y');
+title('Data space');
+randpoint=randperm(size(x,2),20);
+%% Training 
+% Randomly select 20 points to train the model
+for i=1:20
+    % Compute Maximum likelihood
+    W=repmat(axis,size(axis,2),1)+repmat(axis',1,size(axis,2)).*x(randpoint(i));
+    pml=normpdf(W,t(randpoint(i)),1/beta);
+    
+    % Posterior = MLH * Prior
+    P=pml.*P;
+    %Plot out graph at specific point.
+    if (i~=1) && (i~=2) && (i~=20) 
+        continue
+    end
+    lid=lid+1;
+    
+    subplot(4,3,1+3*(lid-1));
+    imagesc_normal(axis,axis,pml);
+    xlabel('w0');
+    ylabel('w1');
+    title('Likelihood');
+    hold on
+    plot(W0(2),W0(1), 'wx')
+    hold off
+    xlabel('w0');
+    ylabel('w1');
+    
+    subplot(4,3,2+3*(lid-1));
+    imagesc_normal(axis,axis,P);
+    hold on
+    plot(W0(2),W0(1), 'wx');
+    hold off
+    xlabel('w0');
+    ylabel('w1');
+    title('Prior/posterior');
+    
+    % plot out the subfigure of 6 randomly selected points
+    red_idx=find(P>0.15);
+    subplot(4,3,3+3*(lid-1));
+    msize = numel(red_idx);
+    % Randomly select 6 points
+    psel=red_idx(randperm(msize, 6));
+    w2=mod(psel,201)*.01-1;
+    w1=((psel-mod(psel,201))./201)*0.01-1;
+    for j=1:6
+        fx=w1(j)+w2(j).*x;
+        plot(x,fx,'r')
+        hold on
+    end
+    for k=1:i
+        plot(x(randpoint(k)),t(randpoint(k)),'ok')
+        ylim([-2 2]);
+        hold on
+    end
+    hold off
+    xlabel('x');
+    ylabel('y');
+    title('Data space');
+end
+##### SOURCE END #####
+--></body></html>
