@@ -4,7 +4,7 @@ clc;
 clear;
 close all;
 % Type of target: options=1 for binary target, options=2 for multi-class
-options = 2;
+options = 1;
 d = 3;
 max_iter = 450;
 eta = 0.5;
@@ -96,12 +96,12 @@ x = (x0-repmat(norm_param(1,:),n,1))./repmat(norm_param(2,:),n,1);
 x = [ones(n,1) x];
 
 if options == 1
-    t_hat = (W'*x')';
+    t_hat = 1./(1+exp(-W'*x')');
     t_pred = zeros(size(t));
     t_idx = find(t_hat>=0.5);
     t_pred(t_idx) = ones(size(t_idx));    
 elseif options == 2
-    t_hat = (WWW'*x')';
+    t_hat = exp(WWW'*x')';
     [max,t_idx] = max(t_hat,[],2);
     t_pred = t_idx-ones(size(t_idx));
 end
