@@ -1,0 +1,12 @@
+department	status	Age	salary	count
+sales	senior	31-35	46K-50K	30
+sales	junior	26-30	26K-30K	40
+sales	Junior	31-35	31K-35K	40
+systems	junior	21-25	46K-50K	20
+systems	senior	31-35	66K-70K	5
+systems	junior	26-30	46K-50K	3
+systems	senior	41-45	66K-70K	3
+marketing	senior	36-40	46K-50K	10
+marketing	junior	31-35	41K-45K	4
+secretary	senior	46-50	36K-40K	4
+secretary	junior	26-30	26K-30K	6

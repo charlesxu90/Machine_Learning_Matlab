@@ -13,6 +13,7 @@ function test_targets = C4_5(train_patterns, train_targets, test_patterns, inc_n
 [Ni, M]		= size(train_patterns);
 inc_node    = inc_node*M/100;
 Nu          = 10;
+
 %Find which of the input patterns are discrete, and discretisize the corresponding
 %dimension on the test patterns
 discrete_dim = zeros(1,Ni);
@@ -34,6 +35,7 @@ tree            = make_tree(train_patterns, train_targets, inc_node, discrete_di
 disp('Classify test samples using the tree')
 test_targets    = use_tree(test_patterns, 1:size(test_patterns,2), tree, discrete_dim, unique(train_targets));
 %END
+
 function targets = use_tree(patterns, indices, tree, discrete_dim, Uc)
 %Classify recursively using a tree
 targets = zeros(1, size(patterns,2));
@@ -64,6 +66,8 @@ else
     end
 end
 %END use_tree
+
+
 function tree = make_tree(patterns, targets, inc_node, discrete_dim, maxNbin, base)
 %Build a tree recursively
 [Ni, L]    					= size(patterns);
