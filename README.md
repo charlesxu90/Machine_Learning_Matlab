@@ -8,34 +8,26 @@ homework or any other works that you should finish by yourself.
 
 The codes are MATLAB code. Contents of the codes will be:
 
-1. Linear regression
+1. Linear regression(batch, schochastic, and maximum likelihood)
 
 2. Bayesian regression
 
 3. Logistic Regression
 
-4. Discriminative Algorithms
+4. Nonparametric Methods(kNN, Locally Weighted kNN)
 
-5. Bayesian Networks
+5. Decision Tree Learning
 
-6. Nonparametric Methods
+6. Artificial Neural Networks
 
-7. Decision Tree Learning
+7. SVM with cross-validation
 
-8. Artificial Neural Networks
+8. clustering (k-means, agglomerative hierarchical clustering, and dbscan)
 
-9. Model Selection
+9. PCA  and Singular Value Decomposition
 
-10. Support Vector Machine
-
-11. SVM and VC-Dimension
-
-12. Unsupervised Learning
-
-13. PCA  Learning
-
-14. Singular Value Decomposition
-
-15. Reinforcement Learning
+10. Reinforcement Learning
 
   Enjoy the code.
+  Copy right by Xiaopeng Xu (Charles Xu)
+  E-mail: charlesxu90@gmail.com
