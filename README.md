@@ -29,5 +29,6 @@ The codes are MATLAB code. Contents of the codes will be:
 10. Reinforcement Learning
 
   Enjoy the code.
+  
   Copy right by Xiaopeng Xu (Charles Xu)
   E-mail: charlesxu90@gmail.com
