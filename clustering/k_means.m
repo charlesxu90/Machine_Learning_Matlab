@@ -2,7 +2,7 @@
 % Load data
 data = importdata('clu_data.txt');
 n = size(data,1);
-
+data=(data-repmat(mean(data),n,1))./repmat(std(data),n,1);
 %% Set initial params
 ks = 2:20;
 threshold = 0.0001; % Stop threshold for which centroids changes
@@ -88,13 +88,14 @@ end
 cluster=I(:,1);
 
 figure(2)
-plot(data(find(cluster==1),1),data(find(cluster==1),2),'r*');
+plot(data(cluster==1,1),data(cluster==1,2),'r*');
 hold on
-plot(data(find(cluster==2),1),data(find(cluster==2),2),'bx');
-plot(data(find(cluster==3),1),data(find(cluster==3),2),'g*');
-plot(data(find(cluster==4),1),data(find(cluster==4),2),'rx');
-plot(data(find(cluster==5),1),data(find(cluster==5),2),'ro');
-plot(data(find(cluster==6),1),data(find(cluster==6),2),'go');
-plot(data(find(cluster==7),1),data(find(cluster==7),2),'bx');
-plot(data(find(cluster==8),1),data(find(cluster==8),2),'bo');
+plot(data(cluster==2,1),data(cluster==2,2),'bx');
+plot(data(cluster==3,1),data(cluster==3,2),'g*');
+plot(data(cluster==4,1),data(cluster==4,2),'rx');
+plot(data(cluster==5,1),data(cluster==5,2),'ro');
+plot(data(cluster==6,1),data(cluster==6,2),'go');
+plot(data(cluster==7,1),data(cluster==7,2),'bx');
+plot(data(cluster==8,1),data(cluster==8,2),'bo');
 hold off
+legend('1','2','3','4','5','6','7','8');

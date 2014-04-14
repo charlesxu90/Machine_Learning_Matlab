@@ -2,95 +2,137 @@
 % Load data
 data = importdata('clu_data.txt');
 n = size(data,1);
-threshold = 0.0001; % Stop threshold for k-means
-
-%% Running K-means clustering with k=8
-% Here we use Euclidean distance
-% Generate k random centroids
-k=8;
-cent = data(randperm(n, k),:);
-prev_cent = data(1:k,:);
-dist=zeros(n,k);
-
-% Repeat until centroids do not change much
-while sum(sum(abs(cent - prev_cent))) >= threshold
-    prev_cent = cent;
-    % Calculate distance
-    for i=1:k
-        dist(:,i)= sum((repmat(cent(i,:),n,1)-data).^2,2);
-    end
-    [dist_sort, I]=sort(dist,2);
-    cluster=I(:,1);
-    % Update centroids
-    for j=1:k
-        idx=find(cluster==j);
-        cent(j,:)=mean(data(idx,:),1);
-    end
-end
-
-%% Plot out the clusters
-
-for i=1:k
-    dist(:,i)= sum((repmat(cent(i,:),n,1)-data).^2,2);
-end
-[dist_sort, I]=sort(dist,2);
-cluster=I(:,1);
-
-figure(1)
-plot(data(cluster==1,1),data(cluster==1,2),'r*',data(cluster==2,1),...
-    data(cluster==2,2),'b*',data(cluster==3,1),data(cluster==3,2),'g*',...
-    data(cluster==4,1),data(cluster==4,2),'rx',data(cluster==5,1),...
-    data(cluster==5,2),'bo',data(cluster==6,1),data(cluster==6,2),'go',...
-    data(cluster==7,1),data(cluster==7,2),'ro',data(cluster==8,1),...
-    data(cluster==8,2),'bx');
-legend('1', '2','3', '4','5', '6','7', '8');
-hold off
+data=(data-repmat(mean(data),n,1))./repmat(std(data),n,1);
+Options = 1; % Choose different linkage methods: 1:single,2:complete,3:average
 
 %% Agglomerative hierarchical clustering
 % Compute the proximity matrix
 % Repeat:
 %   1. Update distance
-%   2. Merge the nearest two cluster
+%   2. Merge the nearest two clusters
 %   3. Update proximity matrix to reflect the proximity between the new
 %   cluster and the original clusters
 % Until: Only one cluster remains
 
-%% Single linkage
-prox_mat=nan(k);
-% Calculate distance
-for i=1:k
-    for j=1:k
-        ith_cluster = data(cluster==i,:);
-        jth_cluster = data(cluster==j,:);
-        % Compute for each element in proximity matrix
-        for m=1:size(ith_cluster,1)
-            % For each element calculate min dist from other cluster members
-            % Update the dist if the new dist is smaller
-            prox_mat(i,j)=min([prox_mat(i,j) ...
-                min(sum((repmat(ith_cluster(m,:),size(jth_cluster,1),1)-jth_cluster).^2,2))]);
-        end
+prox_mat=nan(n);
+% Initiate proximity matrix
+% Initiate proximity matrix
+for i=1:n
+    for j=i:n
+        prox_mat(i,j) = sum((data(i,:)-data(j,:)).^2);
+        prox_mat(j,i) = prox_mat(i,j);
+   
     end
 end
-% Join and update distance
-% z=linkage(prox_mat,'average');
-
-% Problem with the indices.
-% z=zeros(k-1,3);
-% prox_mat(~prox_mat)=nan;
-% while min(min(prox_mat)) ~= nan
-%     idx=find(prox_mat==min(min(prox_mat)));
-%     i=floor(idx(1)/k);
-%     j=idx(1)-(i-1)*k;
-%     prox_mat(i,j)=nan;
-% end
-
-figure(2)
-dendrogram(z)
-% %% Complete linkage
-% merge = [];
-% for i=1:k
-% end
-% %% Average linkage
-% merge = [];
-% for i=1:k
-% end
+%% Single linkage
+if Options==1
+    % Join and update distance
+    % z=zeros(n-1,3);
+    % % prox_mat(~prox_mat)=nan;
+    % while isnan(min(min(prox_mat)))
+    %     idx=find(prox_mat==min(min(prox_mat)));
+    %     i=floor(idx(1)/n);
+    %     j=idx(1)-(i-1)*n;
+    %     prox_mat(i,j)=nan;
+    % end
+    z=linkage(prox_mat,'single');
+    figure(1)
+    [H,T,outperm]=dendrogram(z);
+    title('Single Linkage')
+    cluster1=outperm(1:17);
+    cluster2=outperm(18:20);
+    cluster3=outperm(21:22);
+    cluster4=outperm(23:25);
+    outlier =outperm(26:30);
+    for i=1:n
+        if find(T(i)==cluster1)
+            CluR(i)=1;
+        elseif find(T(i)==cluster2)
+            CluR(i)=2;
+        elseif find(T(i)==cluster3)
+            CluR(i)=3;
+        elseif find(T(i)==cluster4)
+            CluR(i)=4;
+        elseif find(T(i)==outlier)
+            CluR(i)=5;
+        end
+    end
+    figure(2)
+    plot(data(CluR==1,1),data(CluR==1,2),'r*');
+    hold on
+    plot(data(CluR==2,1),data(CluR==2,2),'bx');
+    plot(data(CluR==3,1),data(CluR==3,2),'g*');
+    plot(data(CluR==4,1),data(CluR==4,2),'rx');
+    plot(data(CluR==5,1),data(CluR==5,2),'ro');
+    hold off
+    legend('1','2','3','4','5');
+    
+    
+%% Complete linkage
+elseif Options ==2
+    z=linkage(prox_mat,'complete');
+    figure(1)
+    [H,T,outperm]=dendrogram(z);
+    title('Complete Linkage')
+    cluster1=outperm(1:17);
+    cluster2=outperm(18);
+    cluster3=outperm(19:25);
+    cluster4=outperm(26:30);
+%     outlier =outperm(26:30);
+    for i=1:n
+        if find(T(i)==cluster1)
+            CluR(i)=1;
+        elseif find(T(i)==cluster2)
+            CluR(i)=2;
+        elseif find(T(i)==cluster3)
+            CluR(i)=3;
+        elseif find(T(i)==cluster4)
+            CluR(i)=4;
+%         elseif find(T(i)==outlier)
+%             CluR(i)=5;
+        end
+    end
+    figure(2)
+    plot(data(CluR==1,1),data(CluR==1,2),'r*');
+    hold on
+    plot(data(CluR==2,1),data(CluR==2,2),'bx');
+    plot(data(CluR==3,1),data(CluR==3,2),'g*');
+    plot(data(CluR==4,1),data(CluR==4,2),'rx');
+%     plot(data(CluR==5,1),data(CluR==5,2),'ro');
+    hold off
+    legend('1','2','3','4');
+    
+%% Average linkage
+elseif Options == 3
+    z=linkage(prox_mat,'average');
+    figure(1)
+    [H,T,outperm]=dendrogram(z);
+    title('Average Linkage')
+    cluster1=outperm(1:17);
+    cluster2=outperm(18);
+    cluster3=outperm(19:25);
+    cluster4=outperm(26:30);
+%     outlier =outperm(26:30);
+    for i=1:n
+        if find(T(i)==cluster1)
+            CluR(i)=1;
+        elseif find(T(i)==cluster2)
+            CluR(i)=2;
+        elseif find(T(i)==cluster3)
+            CluR(i)=3;
+        elseif find(T(i)==cluster4)
+            CluR(i)=4;
+%         elseif find(T(i)==outlier)
+%             CluR(i)=5;
+        end
+    end
+    figure(2)
+    plot(data(CluR==1,1),data(CluR==1,2),'r*');
+    hold on
+    plot(data(CluR==2,1),data(CluR==2,2),'bx');
+    plot(data(CluR==3,1),data(CluR==3,2),'g*');
+    plot(data(CluR==4,1),data(CluR==4,2),'rx');
+%     plot(data(CluR==5,1),data(CluR==5,2),'ro');
+    hold off
+    legend('1','2','3','4');
+end
