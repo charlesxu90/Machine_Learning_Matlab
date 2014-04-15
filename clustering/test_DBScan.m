@@ -5,10 +5,11 @@ clc;
 % Load data
 data = importdata('clu_data.txt');
 n = size(data,1);
-k=10; % No. of nearest neighbors
+k=8; % No. of nearest neighbors
 norm =1; % Whether to normalize or not, 1:norm
 if norm==1
-    data=(data-repmat(mean(data),n,1))./repmat(std(data),n,1);
+    data=(data-repmat(min(data),n,1))./(repmat(max(data)-min(data),n,1));
+%     data=(data-repmat(mean(data),n,1))./repmat(std(data),n,1);
 end
 
 % Calculate the distance matrix
