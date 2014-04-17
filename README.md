@@ -1,4 +1,4 @@
-MachineLearning
+Machine Learning
 ===============
 
 This is a github sourse for some basic Machine Learning algorithms.
