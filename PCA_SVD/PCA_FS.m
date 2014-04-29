@@ -1,0 +1,110 @@
+%% PCA feature selection + SVM
+% This script use PCA for feature selection for SVM classification
+% You need to *change* the *data folder* to make it run properly.
+%% Load Datasets and Preprocessing
+close all;
+clear all
+clc
+
+faceDir = '/Users/charles/Documents/Programs/MATLAB/ML/MachineLearning/PCA_SVD/d_face';
+planeDir = '/Users/charles/Documents/Programs/MATLAB/ML/MachineLearning/PCA_SVD/d_plane';
+
+%% Read images, map it into grayscale, and resize it
+width = 100; height = 100;
+imageSet   = cell([], 1);
+
+% Preprocessing for face images
+% Read file name
+k = dir(fullfile(faceDir,'*.jpg'));
+k = {k(~[k.isdir]).name};
+
+for j=1:length(k)
+    % Read images
+    tempImage  = imread(horzcat(faceDir,filesep,k{j}));
+    imgInfo    = imfinfo(horzcat(faceDir,filesep,k{j}));
+    
+    % Transform into grayscale and resize
+    if strcmp(imgInfo.ColorType,'grayscale') % Already Grayscale? Just resize
+        imageSet{j} = double(imresize(tempImage,[width height]));
+    else
+        imageSet{j} = double(imresize(rgb2gray(tempImage),[width height]));
+    end
+end
+% imagesc(DataSet{j})
+% colormap(gray)
+no_face = length(k); % Record how many are faces
+
+% Preprocessing for plane images
+% Read file name
+k = dir(fullfile(planeDir,'*.jpg'));
+k = {k(~[k.isdir]).name};
+
+for j=1:length(k)
+    % Read images
+    tempImage  = imread(horzcat(planeDir,filesep,k{j}));
+    imgInfo    = imfinfo(horzcat(planeDir,filesep,k{j}));
+    
+    % Transform into grayscale and resize
+    if strcmp(imgInfo.ColorType,'grayscale') % If already Grayscale just resize
+        imageSet{no_face+j} = double(imresize(tempImage,[width height]));
+    else
+        imageSet{no_face+j} = double(imresize(rgb2gray(tempImage),[width height]));
+    end
+end
+
+%% Reshape the image matrices into arrays
+dataSet=zeros(length(imageSet), 100*100);
+for i=1:length(imageSet)
+    dataSet(i,:)   = reshape(imageSet{i},1, 100*100);
+end
+
+%% Add label
+label = [ones(1,no_face) zeros(1,size(dataSet,1)-no_face)]';
+K=3;
+TPR1=zeros(K,1);
+TPR2=zeros(K,1);
+PCNo2=zeros(K,1);
+for k =1:K
+    %% Cross Validation
+    idx=crossvalind('Kfold',length(imageSet),5);
+    train_idx=find(idx~=1);
+    test_idx =find(idx==1);
+    
+    %% SVM without PCA feature selection
+    SVMStruct1 = svmtrain(dataSet(train_idx,:), label(train_idx,:), 'kernel_function', 'linear');
+    test_label_hat1 = svmclassify(SVMStruct1, dataSet(test_idx,:));
+    TPR1(k)=size(find(label(test_idx,:)-test_label_hat1==0),1)/size(label(test_idx,:),1);
+    
+    %% SVM with PCA feature selection
+    % PCA feature selection (use SVD method)
+    % PC from Train Data also applies to Test Data
+    [U,S,V]=svd(dataSet(train_idx,:)-repmat(mean(dataSet(train_idx,:)),size(dataSet(train_idx,:),1),1));
+    for i=1:size(S,1)
+        eigval(i) = S(i,i)^2/size(dataSet,1);
+    end
+    % Select No. of principal components
+    threshold = 0.95; % Threshold for selection of principal components
+    i = 0;
+    eigval_sum=0;
+    while eigval_sum/sum(eigval) < threshold
+        i=i+1;
+        eigval_sum = eigval_sum + eigval(i);
+    end
+    PCNo2(k)=i;
+    
+    trainData=dataSet(train_idx,:)*V(1:i,:)';
+    testData =dataSet(test_idx,:)*V(1:i,:)';
+    
+    SVMStruct2 = svmtrain(trainData, label(train_idx,:), 'kernel_function', 'linear');
+    test_label_hat2 = svmclassify(SVMStruct2, testData);
+    TPR2(k)=size(find(label(test_idx,:)-test_label_hat2==0),1)/size(label(test_idx,:),1);
+end
+
+PCNo2
+mean(PCNo2)
+
+TPR2
+mean(TPR2)
+
+TPR1
+mean(TPR1)
