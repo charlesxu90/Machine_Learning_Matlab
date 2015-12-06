@@ -8,7 +8,7 @@ homework or any other works that you should finish by yourself.
 
 The codes are MATLAB code. Contents of the codes will be:
 
-1. Linear regression(batch, schochastic, and maximum likelihood)
+1. Linear regression(batch, stochastic, and maximum likelihood)
 
 2. Bayesian regression
 
